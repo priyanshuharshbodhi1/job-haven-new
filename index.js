@@ -3,9 +3,12 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const bcrypt = require("bcrypt");
+const cors = require("cors");
 dotenv.config();
 
 const app = express();
+
+app.use(cors());
 
 const User = require("./models/user.js");
 
@@ -18,30 +21,30 @@ app.get("/health", (req, res) => {
 });
 
 app.post("/api/signup", async (req, res) => {
-    try {
-      const { firstName, lastName, email, password } = req.body;
-      const hashedPassword = await bcrypt.hash(password, 10);
-  
-      let user = await User.findOne({ email });
-      if (user) {
-        res.json({ message: "User already exists" });
-      } else {
-        res.json({ message: "User created successfully" });
-        const newUser = new User({
-          firstName,
-          lastName,
-          email,
-          password: hashedPassword,
-        });
-        await newUser.save();
-      }
-    } catch (error) {
-      console.log(error);
-      res.status(500).json({ message: "An error occurred", error });
+  try {
+    const { firstName, lastName, email, password } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    console.log(process.env.REACT_APP_BACKEND_URL);
+
+
+    let user = await User.findOne({ email });
+    if (user) {
+      res.json({ message: "User already exists" });
+    } else {
+      res.json({ message: "User created successfully" });
+      const newUser = new User({
+        firstName,
+        lastName,
+        email,
+        password: hashedPassword,
+      });
+      await newUser.save();
     }
-  });
-
-
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "An error occurred", error });
+  }
+});
 
 // Error Handler-
 app.use((req, res, next) => {
@@ -66,6 +69,8 @@ app.listen(process.env.PORT, () => {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     })
-    .then(() => console.log(`Server running on http://localhost:${process.env.PORT}`))
+    .then(() =>
+      console.log(`Server running on http://localhost:${process.env.PORT}`)
+    )
     .catch((error) => console.error(error));
 });
