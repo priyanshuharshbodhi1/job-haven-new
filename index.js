@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const bcrypt = require("bcrypt");
+const jwt = require('jsonwebtoken')
 const cors = require("cors");
 dotenv.config();
 
@@ -45,6 +46,42 @@ app.post("/api/signup", async (req, res) => {
     res.status(500).json({ message: "An error occurred", error });
   }
 });
+
+app.post('/api/login', async (req, res) => {
+  try {
+    const { email, password } = req.body
+    const user = await User.findOne({ email })
+    if(user) {
+      const passwordMatched = await bcrypt.compare(password, user.password)
+      if(passwordMatched) {
+        const jwToken = jwt.sign(user.toJSON(), process.env.JWT_SECRET, { expiresIn: 60 })
+        res.json({
+          status: 'SUCCESS',
+          message: "You've logged in successfully",
+          jwToken
+        })
+      } else {
+      res.json({
+        status: 'FAIL',
+        message: 'Incorrect password'
+      })
+    }
+    } else {
+      res.json({
+        status: 'FAIL',
+        message: 'User does not exist'
+      })
+    }
+  } catch (error) {
+    console.log(error)
+    res.json({
+      status: 'FAIL',
+      message: 'Something went wrong', error
+    })
+  }
+})
+
+
 
 // Error Handler-
 app.use((req, res, next) => {
