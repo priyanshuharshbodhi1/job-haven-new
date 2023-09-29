@@ -5,16 +5,21 @@ const dotenv = require("dotenv");
 const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken')
 const cors = require("cors");
+const cookieParser = require('cookie-parser');
 dotenv.config();
 
 const app = express();
 
+app.use(cookieParser());
 app.use(cors());
 
 const User = require("./models/user.js");
+const Job = require("./models/addjob.js");
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("./public"));
+
+
 
 // APIs-
 app.get("/health", (req, res) => {
@@ -54,12 +59,10 @@ app.post('/api/login', async (req, res) => {
     if(user) {
       const passwordMatched = await bcrypt.compare(password, user.password)
       if(passwordMatched) {
-        const jwToken = jwt.sign(user.toJSON(), process.env.JWT_SECRET, { expiresIn: 60 })
-        res.json({
-          status: 'SUCCESS',
-          message: "You've logged in successfully",
-          jwToken
-        })
+        const jwToken = jwt.sign(user.toJSON(), process.env.JWT_SECRET, { expiresIn: 6000 })
+        res.cookie('jwt', jwToken, { httpOnly: true });
+        res.redirect(302, 'http://localhost:3000/jobfinder');
+        return;
       } else {
       res.json({
         status: 'FAIL',
@@ -80,6 +83,33 @@ app.post('/api/login', async (req, res) => {
     })
   }
 })
+
+const isAuthenticated = (req, res, next) =>{
+  const token = req.cookies.jwt;
+
+  if (!token) {
+    return res.sendStatus(401);
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.sendStatus(403);
+    }
+    
+    req.user = user;
+    next();
+  });
+}
+
+app.post("/api/jobpost", isAuthenticated, async (req, res) => {
+  try {
+    const newJob = new Job(req.body);
+    await newJob.save();
+    res.status(201).json({ message: "Job listing created successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error creating job listing", error });
+  }
+});
 
 
 
