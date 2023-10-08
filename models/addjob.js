@@ -5,7 +5,8 @@ const jobSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  logoURL: String,
+  logoURL: { type: String, required: true },
+
   jobPosition: {
     type: String,
     required: true,
