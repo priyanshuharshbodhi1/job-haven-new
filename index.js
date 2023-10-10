@@ -11,7 +11,11 @@ dotenv.config();
 const app = express();
 
 app.use(cookieParser());
-app.use(cors());
+
+app.use(cors({
+  origin: "http://localhost:3000",
+  credentials: true,
+}));
 
 const User = require("./models/user.js");
 const Job = require("./models/addjob.js");
@@ -67,6 +71,7 @@ app.post("/api/login", async (req, res) => {
           expiresIn: 6000,
         });
         res.cookie("jwt", jwToken, { httpOnly: true });
+        console.log(jwToken);
         res.redirect(302, "http://localhost:3000/jobfinder");
         return;
       } else {
