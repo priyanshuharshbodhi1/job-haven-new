@@ -39,6 +39,8 @@ app.post("/api/signup", async (req, res) => {
     const { firstName, lastName, email, password, recruiter } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // console.log(req.body);
+
     let user = await User.findOne({ email });
     if (user) {
       res.json({ message: "User already exists" });
@@ -48,7 +50,7 @@ app.post("/api/signup", async (req, res) => {
         lastName,
         email,
         password: hashedPassword,
-        recruiter: req.body.recruiter === "true",
+        recruiter: req.body.recruiter === "on" ,
       });
       await newUser.save();
       res.redirect(302, "http://localhost:3000");
@@ -71,7 +73,7 @@ app.post("/api/login", async (req, res) => {
           expiresIn: 6000,
         });
         res.cookie("jwt", jwToken, { httpOnly: true });
-        console.log(jwToken);
+        // console.log(jwToken);
         res.redirect(302, "http://localhost:3000/jobfinder");
         return;
       } else {
@@ -109,12 +111,14 @@ const isAuthenticated = (req, res, next) => {
     }
 
     req.user = user;
+    console.log(req.user);
 
     next();
   });
 };
 
 const isRecruiter = (req, res, next) => {
+  // console.log(req.user.recruiter)
   if (req.user.recruiter) {
     next();
   } else {
@@ -136,8 +140,15 @@ app.post("/api/jobpost", isAuthenticated, isRecruiter, async (req, res) => {
 });
 
 app.get("/api/isloggedin", isAuthenticated, (req, res) => {
-  res.json({ isLoggedIn: true });
+  // Check if the user is logged in and include the user's firstName in the response
+  const isLoggedIn = true; 
+  if (isLoggedIn) {
+    res.json({ isLoggedIn: true, firstName: req.user.firstName });
+  } else {
+    res.json({ isLoggedIn: false });
+  }
 });
+
 
 app.get("/api/isrecruiter", isAuthenticated, isRecruiter, async (req, res) => {
   try {
