@@ -111,7 +111,7 @@ const isAuthenticated = (req, res, next) => {
     }
 
     req.user = user;
-    console.log(req.user);
+    // console.log(req.user);
 
     next();
   });
@@ -156,6 +156,13 @@ app.get("/api/isrecruiter", isAuthenticated, isRecruiter, async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "user not logged in", error });
   }
+});
+
+app.post("/api/logout", (req, res) => {
+  // Clear the JWT token from cookies by setting an expired token
+  res.cookie("jwt", "", { expires: new Date(0) });
+
+  res.status(200).json({ message: "Logged out successfully" });
 });
 
 // Error Handler-
