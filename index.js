@@ -28,12 +28,6 @@ app.get("/health", (req, res) => {
   res.json({ message: "all right" });
 });
 
-app.get("/api/joblist", async (req, res) => {
-  Job.find()
-    .then((jobs) => res.json(jobs))
-    .catch((err) => res.json(err));
-});
-
 app.post("/api/signup", async (req, res) => {
   try {
     const { firstName, lastName, email, password, recruiter } = req.body;
@@ -164,6 +158,28 @@ app.post("/api/logout", (req, res) => {
 
   res.status(200).json({ message: "Logged out successfully" });
 });
+
+
+app.get("/api/joblist", async (req, res) => {
+  const selectedSkills = req.query.selectedSkills;
+
+  const selectedSkillsArray = selectedSkills ? selectedSkills.split(",") : [];
+
+  const query =
+    selectedSkillsArray.length > 0
+      ? {
+          $or: selectedSkillsArray.map((skill) => ({
+            skillsRequired: { $regex: new RegExp(skill, "i") },
+          })),
+        }
+      : {};
+
+  Job.find(query)
+    .then((jobs) => res.json(jobs))
+    .catch((err) => res.json(err));
+});
+
+
 
 // Error Handler-
 app.use((req, res, next) => {
