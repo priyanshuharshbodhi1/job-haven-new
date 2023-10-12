@@ -194,6 +194,18 @@ app.get("/api/jobdetails/:jobId", async (req, res) => {
   }
 });
 
+app.get("/api/editjob/:jobId", (req, res) => {
+  const jobId = req.params.jobId;
+
+  Job.findById(jobId, (err, job) => {
+    if (err) {
+      res.status(404).json({ message: "Job not found" });
+    } else {
+      res.json(job);
+    }
+  });
+});
+
 // Error Handler-
 app.use((req, res, next) => {
   const err = new Error("Route not found");
