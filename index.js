@@ -179,7 +179,20 @@ app.get("/api/joblist", async (req, res) => {
     .catch((err) => res.json(err));
 });
 
+app.get("/api/jobdetails/:jobId", async (req, res) => {
+  try {
+    const jobId = req.params.jobId;
+    const job = await Job.findById(jobId).exec();
 
+    if (!job) {
+      res.status(404).json({ message: "Job not found" });
+    } else {
+      res.json(job);
+    }
+  } catch (error) {
+    res.status(500).json({ message: "An error occurred", error });
+  }
+});
 
 // Error Handler-
 app.use((req, res, next) => {
