@@ -13,7 +13,7 @@ const app = express();
 app.use(cookieParser());
 
 app.use(cors({
-  origin: "http://localhost:3000",
+  origin: "http://localhost:3001",
   credentials: true,
 }));
 
@@ -47,7 +47,7 @@ app.post("/api/signup", async (req, res) => {
         recruiter: req.body.recruiter === "on" ,
       });
       await newUser.save();
-      res.redirect(302, "http://localhost:3000");
+      res.redirect(302, "http://localhost:3001");
       console.log("User Created Successfully");
     }
   } catch (error) {
@@ -68,7 +68,7 @@ app.post("/api/login", async (req, res) => {
         });
         res.cookie("jwt", jwToken, { httpOnly: true });
         // console.log(jwToken);
-        res.redirect(302, "http://localhost:3000/jobfinder");
+        res.redirect(302, "http://localhost:3001/jobfinder");
         return;
       } else {
         res.json({
@@ -105,7 +105,6 @@ const isAuthenticated = (req, res, next) => {
     }
 
     req.user = user;
-    // console.log(req.user);
 
     next();
   });
