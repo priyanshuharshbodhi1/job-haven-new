@@ -6,14 +6,17 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const PORT = process.env.PORT || 4000;
 dotenv.config();
 
 const app = express();
 
 app.use(cookieParser());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.static("./public"));
 
 app.use(cors({
-  origin: "http://localhost:3001",
+  origin: `${process.env.REACT_URL}`,
   credentials: true,
 }));
 
@@ -47,7 +50,7 @@ app.post("/api/signup", async (req, res) => {
         recruiter: req.body.recruiter === "on" ,
       });
       await newUser.save();
-      res.redirect(302, "http://localhost:3001");
+      res.redirect(302, `${process.env.REACT_URL}`);
       console.log("User Created Successfully");
     }
   } catch (error) {
@@ -68,7 +71,7 @@ app.post("/api/login", async (req, res) => {
         });
         res.cookie("jwt", jwToken, { httpOnly: true });
         // console.log(jwToken);
-        res.redirect(302, "http://localhost:3001/jobfinder");
+        res.redirect(302, `${process.env.REACT_URL}/jobfinder`);
         return;
       } else {
         res.json({
@@ -222,14 +225,14 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(process.env.PORT, () => {
+app.listen(PORT, () => {
   mongoose
     .connect(process.env.MONGODB_URL, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     })
     .then(() =>
-      console.log(`Server running on http://localhost:${process.env.PORT}`)
+      console.log(`Server running on http://localhost:${PORT}`)
     )
     .catch((error) => console.error(error));
 });
